@@ -1,7 +1,7 @@
 const express = require('express'); 
 const cors = require('cors');
 const axios = require('axios'); 
-const mongoose = require('mongoose');
+
 
 const rateLimit = require('express-rate-limit'); // Import rate limiting middleware
 
@@ -10,20 +10,9 @@ const rateLimit = require('express-rate-limit'); // Import rate limiting middlew
 const app = express();  
 require('dotenv').config();
 
-mongoose.connect(process.env.connectionString).then(() => {
-    console.log('Connected to MongoDB');
-}).catch(err => {
-    console.error('Error connecting to MongoDB:', err);
-});
 
 
-const SummonerInfoSchema = new mongoose.Schema({
 
-    
-    
-});
-
-const SummonerInfoModel = mongoose.model('SummonerInfo', SummonerInfoSchema);
 
 const limiter = rateLimit({
 	windowMs: 2 * 60 * 1000, // 2 minutes
