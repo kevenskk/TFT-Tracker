@@ -13,23 +13,18 @@ function App() {
   const [matchList, setMatchList] = useState([]) // store match data
   const [rankedData, setRankedData] = useState([]) // store ranked data
   const [summonerData, setSummonerData] = useState([]) // store summoner data
+  const [server, setServer] = useState("europe"); 
 
-
-
-  const [server, setServer] = useState("europe"); // store server data
-
-  const [championJson, setChampionJSON] = useState(null);
-  const [currentChampionJson, setCurrentChampionJSON] = useState(null);
-  const [fifteenChampionJson, set15ChampionJSON] = useState(null);
-  const [tacticianJSON, setTacticianJSON] = useState(null);
+  const [tacticianJSON, setTacticianJSON] = useState(null); // load on page load
   const [latestPatch, setLatestPatchVersion] = useState(null);
 
-  // path to localhost / vercel
 
+  // local/live server endpoints
   const allData = 'http://localhost:4000/allData'; 
   const allDataVercel = 'https://tfttracker-server.vercel.app/allData'; 
 
-  
+
+
   
 
   function getPlayerData(event) {  
@@ -62,25 +57,6 @@ function App() {
                  
   }
 
-  
-
-  function secondsToMinute(seconds){
-     let minutes = Math.floor(seconds/60);  
-     let remainingSeconds = Math.floor(seconds % 60);
-    
-     return `${minutes}:${remainingSeconds < 10 ? '0' : ''}${remainingSeconds}`; // Format as MM:SS
-    }
-
-  
-
-    function unixToDate(unixTimestamp) {
-
-      const date = new Date(unixTimestamp);
-      
-      return date.toUTCString();
-      
-    }
-    
 
     function getTacticianImage(tacticianID){
       try{
@@ -93,68 +69,8 @@ function App() {
       
     }
 
-  
-    useEffect(() => {
 
-     
-        
-      async function fetchJSON(){
-
-       try{
-           const Patchresponse = await fetch('https://ddragon.leagueoflegends.com/api/versions.json');
-
-           const latestPatchVersion = await Patchresponse.json(); 
-
-           setLatestPatchVersion(latestPatchVersion[0]); // Set the latest patch version
-
-
-           const Set13 = await fetch('https://ddragon.leagueoflegends.com/cdn/15.6.1/data/en_GB/tft-champion.json');
-
-           
-
-           const Set14 = await fetch('https://ddragon.leagueoflegends.com/cdn/15.14.1/data/en_GB/tft-champion.json');
-
-
-
-           const Set15 = await fetch('https://ddragon.leagueoflegends.com/cdn/'+latestPatchVersion[0]+'/data/en_GB/tft-champion.json');
-
-           const tacticianResponse = await fetch('https://ddragon.leagueoflegends.com/cdn/'+latestPatchVersion[0]+'/data/en_GB/tft-tactician.json');
-
-          
-
-           if(!Set13.ok || !Set14.ok || !Set15.ok || !tacticianResponse.ok){
-             throw new Error(`Could not fetch the requested Set data: ${Set13.status} ${Set14.status} ${tacticianResponse.status}`);
-
-           }
-          
-          
-   
-           const Set13JSON = await Set13.json();
-           const Set14JSON = await Set14.json(); // retrieve the current set's champion data/assets
-           const Set15JSON = await Set15.json(); // retrieve the current set's champion data/assets
-           const tactician = await tacticianResponse.json();
-           
-           
-           setChampionJSON(Set13JSON);
-           setCurrentChampionJSON(Set14JSON);
-           set15ChampionJSON(Set15JSON);
-           setTacticianJSON(tactician);
-         
-        }catch(error){
-          console.error("Error fetching JSON data:", error);
-   
-        }
-   
-       }
-       
-       fetchJSON();
-
-    }, [])
-
-   
-
-
-    // Function to get the champion image based on the champion ID
+      // Function to get the champion image based on the champion ID
     
    function getChampionImage(championID){
 
@@ -176,40 +92,78 @@ function App() {
         
         
     
-        if(championIDPath.includes('TFT14') ){
-          return `https://raw.communitydragon.org/15.15/game/assets/characters/${championIDPath.toLowerCase()}/hud/${championIDPath.toLowerCase()}_square.tft_set14.png`;
+        if(championIDPath.includes('TFT13') ){
+          return `https://raw.communitydragon.org/15.15/game/assets/characters/${championIDPath.toLowerCase()}/hud/${championIDPath.toLowerCase()}_square.tft_set13.png`;
              
 
 
-        } else if(championIDPath.includes('TFT13')){
+        } else if(championIDPath.includes('TFT14')){
    
-          return `https://raw.communitydragon.org/15.15/game/assets/characters/${championIDPath.toLowerCase()}/hud/${championIDPath.toLowerCase()}_square.tft_set13.png`;
+          return `https://raw.communitydragon.org/15.15/game/assets/characters/${championIDPath.toLowerCase()}/hud/${championIDPath.toLowerCase()}_square.tft_set14.png`;
           
           
         } else if (championIDPath.includes('TFT15')) {
 
           return `https://raw.communitydragon.org/15.15/game/assets/characters/${championIDPath.toLowerCase()}/hud/${championIDPath.toLowerCase()}_square.tft_set15.png`;
 
+        } else if (championIDPath.includes('TFT16')) {
+         
+          return `https://raw.communitydragon.org/16.4/game/assets/characters/${championIDPath.toLowerCase()}/hud/${championIDPath.toLowerCase()}_square.tft_set16.png`;
         }
       
 
       }catch (error){
          
-        
-       
-        console.error("Error fetching champion image:", error);
+      
+        console.error("Error fetching unit images:", error);
       } 
-      
-        
-       
-
     
-      
       
     } 
 
+  
+    useEffect(() => {
 
-    
+     
+        
+      async function fetchJSON(){
+
+       try{
+           const Patchresponse = await fetch('https://ddragon.leagueoflegends.com/api/versions.json');
+
+           const latestPatchVersion = await Patchresponse.json(); 
+
+           setLatestPatchVersion(latestPatchVersion[0]); // Set the latest patch version
+
+
+
+           const tacticianResponse = await fetch('https://ddragon.leagueoflegends.com/cdn/'+latestPatchVersion[0]+'/data/en_GB/tft-tactician.json'); // retrieve latest tacticians
+
+           const tactician = await tacticianResponse.json();
+           setTacticianJSON(tactician);
+          
+
+           if(!Patchresponse.ok || !tacticianResponse.ok){
+             throw new Error(`Could not fetch the requested Set data: ${Patchresponse.status} ${tacticianResponse.status}`);
+
+           }
+          
+
+         
+        }catch(error){
+          console.error("Error fetching data:", error);
+   
+        }
+   
+       }
+       
+       fetchJSON();
+
+    }, [])
+
+   
+
+
   
 
   return (
@@ -312,11 +266,6 @@ function App() {
          
              
 
-       
-        
-
-
-
         <React.Fragment>
         
            {
@@ -328,8 +277,12 @@ function App() {
                 <div className = "matchInfo overflow-auto rounded-lg shadow">
                 
                 <div className = "font-montserrat text-center font-semibold text-gray-800 p-10">     
-                <p> {unixToDate(matchData.info.game_datetime)} </p>
-                <p>  Duration: {secondsToMinute(matchData.info.game_length)} </p>
+                <p> {new Date(matchData.info.game_datetime).toUTCString()} </p>
+                <p>  Duration: {`${Math.floor(matchData.info.game_length / 60)}:${Math.floor(matchData.info.game_length % 60) < 10 ? '0' : ''}${Math.floor(matchData.info.game_length % 60)}`} </p>
+
+
+            
+    
                 
                 </div>
            
@@ -364,7 +317,8 @@ function App() {
                 
                 
                {data.riotIdGameName}</td>
-              <td class = "p-3 text-sm text-gray-700 whitespace-nowrap gap-4"> {secondsToMinute(data.time_eliminated)}</td>
+              <td class = "p-3 text-sm text-gray-700 whitespace-nowrap gap-4"> {`${Math.floor(matchData.info.game_length / 60)}:${Math.floor(matchData.info.game_length % 60) < 10 ? '0' : ''}${Math.floor(matchData.info.game_length % 60)}`}
+              </td>
 
               <td className = "p-3 text-sm text-gray-700 whitespace-nowrap gap-4">
               <div className = 'flex flex-wrap gap-4'>
@@ -476,10 +430,6 @@ function App() {
   }
 </span>
 </div>
-
-                
-            
-                
 
                 
               );
